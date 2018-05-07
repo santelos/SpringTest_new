@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        function showTable(num) {
+            $.ajax({
+                type:"post",
+                url:"/visitsTable",
+                success:function (result) {
+                    $("#visitsTable").empty();
+                    result.forEach(function (arg) {
+                        var singleVis = arg;
+                        var row =
+                            "<tr>" +
+                            "<td>" + singleVis.id + "</td>" +
+                            "<td>" + singleVis.description + "</td>" +
+                            "</tr>";
+                        $("#visitsTable").append(row);
+                    });
+                }
+
+            });
+        }
+
+        function showMessage() {
+            $.ajax({
+                type:"post",
+                url:"/text",
+                data:{},
+                dataType:"text",
+                success:function (result) {
+                    $("#123").html(result);
+                }
+            });
+        }
+
+        function uploadFile() {
+            alert();
+            var data = new FormData($("#uploadFileForm")[0]);
+            alert(data);
+
+            $.ajax({
+                method:"post",
+                type:"post",
+                url:"/upload",
+                cache:false,
+                contentType:false,
+                processData:false,
+                data:data,
+                success:function (result) {
+                    alert("success");
+                },
+                complete:function (result) {
+                    alert("complete");
+                },
+                error:function (result) {
+                    alert("error");
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <h1>{{name}}</h1>
+    <button onclick="showTable(1)">Press Me 1</button>
+    <button onclick="showMessage()">Press Me 2</button>
+    <div id="123"></div>
+    <div style="position: absolute; left: 195px; top:80px">
+        <form id="uploadFileForm" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <button onclick="uploadFile()">Upload File</button>
+        </form>
+        </div>
+
+<table id="visitsTable"></table>
+</body>
+
+
+</html>
