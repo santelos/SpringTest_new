@@ -1,6 +1,7 @@
 package com.example.SpringTest.Storage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -59,23 +63,31 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public List<String> loadAllAsStringList() {
+        return loadAll().map(path -> path.getFileName().toString())
+                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
     public Path load(String filename) {
         return rootLocation.resolve(filename);
     }
 
     @Override
     public Resource loadAsResource(String filename) {
-        try {
-            Path file = load(filename);
-            Resource resource = new UrlResource(file.toUri());
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            }
-        }
-        catch (MalformedURLException e) {
-            e.printStackTrace();
+        Path file = load(filename);
+        System.out.println(file.toUri());
+        Resource resource = new PathResource(file);
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
         }
         return null;
+    }
+
+    @Override
+    public void delete(String fileName) {
+        System.out.println(rootLocation.getRoot()+fileName);
+        FileSystemUtils.deleteRecursively(new File(rootLocation.getRoot()+fileName));
     }
 
     @Override

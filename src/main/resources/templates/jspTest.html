@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<html>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script>
         function showTable(num) {
@@ -35,43 +35,83 @@
             });
         }
 
-        function uploadFile() {
-            alert();
-            var data = new FormData($("#uploadFileForm")[0]);
-            alert(data);
+        function downloadFile(filePath) {
 
+            var link = document.createElement('a');
+            link.href="/files/"+filePath;
+            link.click();
+
+        }
+
+        function deleteFile(filePath) {
             $.ajax({
-                method:"post",
-                type:"post",
-                url:"/upload",
-                cache:false,
-                contentType:false,
-                processData:false,
-                data:data,
+                type:"delete",
+                method:"delete",
+                url:"/deleteFile",
+                data:filePath,
+                dataType:"text",
                 success:function (result) {
-                    alert("success");
-                },
-                complete:function (result) {
-                    alert("complete");
-                },
-                error:function (result) {
-                    alert("error");
+                    alert(result);
                 }
             })
         }
+
+        $(function () {
+            $("#uploadFileForm").submit(function uploadFile() {
+                var data = new FormData($("#uploadFileForm")[0]);
+
+                $.ajax({
+                    method:"post",
+                    type:"post",
+                    url:"/uploadFile",
+                    cache:false,
+                    contentType:false,
+                    processData:false,
+                    data:data,
+                    dataType:"text",
+                    success:function (result) {
+                        var arg = JSON.parse(result);
+                        $("#title").html(arg.message);
+                        var row = "<tr>" +
+                                  "<td><button onclick=downloadFile('" + arg.file + "')>" + arg.file + "</button></td>" +
+                                  "</tr>";
+                        $("#listFilesTable").append(row);
+                        $("#uploadFileForm")[0].reset();
+                    },
+                    error:function (result) {
+                        alert("Error");
+                    }
+                });
+
+                return false;
+            })
+        })
+
     </script>
 </head>
 <body>
-    <h1>{{name}}</h1>
+    <h1 id="title">{{name}}</h1>
     <button onclick="showTable(1)">Press Me 1</button>
     <button onclick="showMessage()">Press Me 2</button>
     <div id="123"></div>
     <div style="position: absolute; left: 195px; top:80px">
         <form id="uploadFileForm" enctype="multipart/form-data">
             <input type="file" name="file">
-            <button onclick="uploadFile()">Upload File</button>
+            <button>Upload File</button>
         </form>
+        <div id="listFiles">
+            <table id="listFilesTable">
+                {{#files}}
+                <tr>
+                    <td>
+                        <button onclick="downloadFile('{{.}}')">{{.}}</button>
+                        <button onclick="deleteFile('{{.}}')">Delete</button>
+                    </td>
+                </tr>
+                {{/files}}
+            </table>
         </div>
+    </div>
 
 <table id="visitsTable"></table>
 </body>
